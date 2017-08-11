@@ -1,16 +1,12 @@
-﻿using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
-public class EmojiSO : MonoBehaviour {
+[CreateAssetMenu(fileName = "Emoji_",menuName = "Cards/Emoji",order = 1)]
+public class EmojiSO : ScriptableObject {
+	public int hunger = 100;
+	public int hygene = 100;
+	public int happiness = 100;
+	public int stamina = 100;
+	public int health = 100;
 
-	void Awake()
-	{
-		
-	}
-	
-	void Start () 
-	{
-		
-	}
+	public Sprite[] expressions;
 }
