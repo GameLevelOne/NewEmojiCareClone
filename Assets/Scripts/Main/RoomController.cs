@@ -12,7 +12,6 @@ public class RoomController : MonoBehaviour {
 	public RoomName currentRoom = RoomName.Bedroom;
 
 	bool editMode = false;
-	bool emojiSleep = false;
 
 	void Awake()
 	{
@@ -31,52 +30,48 @@ public class RoomController : MonoBehaviour {
 
 	void OnEmojiSleep()
 	{
-		emojiSleep = true;
 		emoji.OnEmojiSleepEvent -= OnEmojiSleep;
 		emoji.OnEmojiSleepEvent += OnEmojiWake;
+
 		buttonLeft.SetActive(false);
 		buttonRight.SetActive(false);
-		textButtonEditMode.text = "Wake Up";
+		buttonEditRoom.SetActive(false);
 	}
 
 	void OnEmojiWake()
 	{
-		emojiSleep = false;
 		emoji.OnEmojiSleepEvent -= OnEmojiWake;
 		emoji.OnEmojiSleepEvent += OnEmojiSleep;
+
 		buttonLeft.SetActive(true);
 		buttonRight.SetActive(true);
-		textButtonEditMode.text = "Edit Room";
+		buttonEditRoom.SetActive(true);
 		rooms[(int)RoomName.Bedroom].GetComponent<BedroomController>().EnableButtonItems();
 	}
 
 	public void ButtonEditRoomOnClick()
 	{
-		if(!emojiSleep){
-			editMode = !editMode;
+		editMode = !editMode;
 
-			if(editMode){
-				emoji.gameObject.SetActive(false);
-				buttonLeft.SetActive(false);
-				buttonRight.SetActive(false);
-				textButtonEditMode.text = "Done";
-			}else{
-				emoji.gameObject.SetActive(true);
-				buttonLeft.SetActive(true);
-				buttonRight.SetActive(true);
-				textButtonEditMode.text = "Edit Room";
-			}
-
-			switch(currentRoom){
-			case RoomName.Kitchen: rooms[(int)currentRoom].GetComponent<KitchenController>().SwitchEditMode(editMode); break;
-			case RoomName.Bathroom: rooms[(int)currentRoom].GetComponent<BathroomController>().SwitchEditMode(editMode); break;
-			case RoomName.Bedroom: rooms[(int)currentRoom].GetComponent<BedroomController>().SwitchEditMode(editMode); break;
-			default: break;
-			}
+		if(editMode){
+			emoji.gameObject.SetActive(false);
+			buttonLeft.SetActive(false);
+			buttonRight.SetActive(false);
+			textButtonEditMode.text = "Done";
 		}else{
-			emoji.Wake();
+			emoji.gameObject.SetActive(true);
+			buttonLeft.SetActive(true);
+			buttonRight.SetActive(true);
+			textButtonEditMode.text = "Edit Room";
+			ValidateButtonLeftRight();
 		}
 
+		switch(currentRoom){
+		case RoomName.Kitchen: rooms[(int)currentRoom].GetComponent<KitchenController>().SwitchEditMode(editMode); break;
+		case RoomName.Bathroom: rooms[(int)currentRoom].GetComponent<BathroomController>().SwitchEditMode(editMode); break;
+		case RoomName.Bedroom: rooms[(int)currentRoom].GetComponent<BedroomController>().SwitchEditMode(editMode); break;
+		default: break;
+		}
 	}
 
 	public void ButtonLeftOnClick()

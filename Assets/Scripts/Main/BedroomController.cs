@@ -35,27 +35,28 @@ public class BedroomController : Rooms {
 	public Emoji emoji;
 	public Image darkFilter;
 
-	bool lampOn = true;
-	bool windowOpen = true;
+	public bool lampOn = true;
+	public bool windowOpen = true;
+
+	int staminaFactor = 1;
 
 	public void ButtonWindowOnClick()
 	{
 		if(windowOpen){
 			windowOpen = false;
 			UpdateDarkFilter(0.25f);
+			staminaFactor++;
 		}else{
 			windowOpen = true;
 			UpdateDarkFilter(-0.25f);
+			staminaFactor--;
 		}
 	}
 
 	public void ButtonBedOnClick()
 	{
-		foreach(Button a in buttonItems) a.interactable = false;
-//		buttonItems[(int)BedroomItems.Bed].interactable = true;
-//
-//		if(emoji.state == EmojiState.Sleep) emoji.Wake();
-		if(emoji.state != EmojiState.Sleep && emoji.state != EmojiState.Angry) emoji.Sleep();
+		foreach(GameObject a in buttonItems) a.GetComponent<Button>().interactable = false;
+		if(emoji.state != EmojiState.Sleep && emoji.state != EmojiState.Angry) emoji.Sleep(staminaFactor);
 	}
 
 	public void ButtonLampOnClick()
@@ -63,9 +64,11 @@ public class BedroomController : Rooms {
 		if(lampOn){
 			lampOn = false;
 			UpdateDarkFilter(0.5f);
+			staminaFactor++;
 		}else{
 			lampOn = true;
 			UpdateDarkFilter(-0.5f);
+			staminaFactor--;
 		}
 	}
 
@@ -104,6 +107,6 @@ public class BedroomController : Rooms {
 
 	public void EnableButtonItems()
 	{
-		foreach(Button a in buttonItems) a.interactable = true;
+		foreach(GameObject a in buttonItems) a.GetComponent<Button>().interactable = true;
 	}
 }

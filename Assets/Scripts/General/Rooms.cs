@@ -14,8 +14,10 @@ public class Rooms : MonoBehaviour {
 
 	public RoomSO roomSO;
 
-	public Button[] buttonItems;
+	public GameObject[] buttonItems;
 	public GameObject[] buttonChangeSprites;
+
+	protected bool editMode = false;
 
 	public void SwitchEditMode(bool editMode)
 	{
@@ -24,10 +26,10 @@ public class Rooms : MonoBehaviour {
 		}
 
 		if(!editMode){
-			foreach(Button button in buttonItems) button.interactable = true;
+			foreach(GameObject button in buttonItems) if(button.GetComponent<Button>() != null) button.GetComponent<Button>().interactable = true;
 			foreach(GameObject button in buttonChangeSprites) button.SetActive(false);
 		}else{
-			foreach(Button button in buttonItems) button.interactable = false;
+			foreach(GameObject button in buttonItems) if(button.GetComponent<Button>() != null) button.GetComponent<Button>().interactable = false;
 			foreach(GameObject button in buttonChangeSprites) button.SetActive(true);
 		}
 	}

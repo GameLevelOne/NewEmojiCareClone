@@ -2,8 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum Stats_Category{
-	Hunger = 0,
+public enum EmojiStats{
+	Hunger,
 	Hygene,
 	Happiness,
 	Stamina,
@@ -22,7 +22,9 @@ public enum EmojiState{
 
 public class Emoji : MonoBehaviour {
 	public delegate void EmojiSleep();
+	public delegate void EmojiTickStats();
 	public event EmojiSleep OnEmojiSleepEvent;
+	public event EmojiTickStats OnEmojiTickStats;
 
 	public EmojiSO emojiSO;
 	public EmojiState state = EmojiState.Default;
@@ -31,6 +33,7 @@ public class Emoji : MonoBehaviour {
 	Image thisImage;
 
 	int tapCount;
+	bool sleeping = false;
 
 	#region stats
 	const string KeyEmojiHunger = "Player/Emoji/Hunger";
@@ -96,21 +99,50 @@ public class Emoji : MonoBehaviour {
 	}
 
 	#region mechanics_general
-	public void TickStats(Stats_Category category,int ticks = -1)
+	public void TickStats(EmojiStats category,int ticks = -1)
 	{
 		switch(category){
-		case Stats_Category.Hunger: hungerMod += ticks; break;
-		case Stats_Category.Hygene: hygeneMod += ticks; break;
-		case Stats_Category.Happiness: happinessMod += ticks; break;
-		case Stats_Category.Stamina: staminaMod += ticks; break;
-		case Stats_Category.Health: healthMod += ticks; break;
+		case EmojiStats.Hunger: hungerMod += ticks; break;
+		case EmojiStats.Hygene: hygeneMod += ticks; break;
+		case EmojiStats.Happiness: happinessMod += ticks; break;
+		case EmojiStats.Stamina: staminaMod += ticks; break;
+		case EmojiStats.Health: healthMod += ticks; break;
 		}
+		AdjustStats();
+		if(OnEmojiTickStats != null) OnEmojiTickStats();
+	}
+
+	void AdjustStats()
+	{
+		if(hungerMod > hunger) hungerMod = hunger;
+		if(hygeneMod > hygene) hygeneMod = hunger;
+		if(happinessMod > happiness) happinessMod = happiness;
+		if(staminaMod > stamina) staminaMod = stamina;
+		if(healthMod > health) healthMod = health;
+		
+		if(hungerMod < 0) hungerMod = 0;
+		if(hygeneMod < 0) hygeneMod = 0;
+		if(happinessMod < 0) happinessMod = 0;
+		if(staminaMod < 0) staminaMod = 0;
+		if(healthMod < 0) healthMod = 0;
+	}
+
+	//CHEAT
+	public void ResetStats()
+	{
+		TickStats(EmojiStats.Hunger,emojiSO.hunger);
+		TickStats(EmojiStats.Hygene,emojiSO.hunger);
+		TickStats(EmojiStats.Happiness,emojiSO.hunger);
+		TickStats(EmojiStats.Stamina,emojiSO.hunger);
+		TickStats(EmojiStats.Health,emojiSO.hunger);
 	}
 
 	void SetState(EmojiState state)
 	{
-		this.state = state;
-		thisImage.sprite = expressions[(int)state];
+		if(state == EmojiState.Default && sleeping) this.state = EmojiState.Sleep;
+		else this.state = state;
+
+		thisImage.sprite = expressions[(int)this.state];
 	}
 	#endregion
 
@@ -130,6 +162,8 @@ public class Emoji : MonoBehaviour {
 				StopCoroutine("OnAnnoyed");
 				StartCoroutine("OnAngry");
 			}
+		}else if(state == EmojiState.Sleep){
+			Wake();
 		}
 	}
 
@@ -143,13 +177,14 @@ public class Emoji : MonoBehaviour {
 	public void OnEndDrag()
 	{
 		if(state == EmojiState.Blissful){
+			TickStats(EmojiStats.Happiness,1);
 			SetState(EmojiState.Default);
 		}
 	}
 	#endregion
 
 	#region mechanics_coroutines
-	IEnumerator OnSurprised(float duration = 3f)
+	IEnumerator OnSurprised(float duration = 2f)
 	{
 		SetState(EmojiState.Surprised);
 		yield return new WaitForSeconds(duration);
@@ -160,7 +195,7 @@ public class Emoji : MonoBehaviour {
 	IEnumerator OnAnnoyed()
 	{
 		SetState(EmojiState.Annoyed);
-		yield return new WaitForSeconds(3f);
+		yield return new WaitForSeconds(2f);
 		tapCount = 0;
 		SetState(EmojiState.Default);
 	}
@@ -168,25 +203,47 @@ public class Emoji : MonoBehaviour {
 	{
 		SetState(EmojiState.Angry);
 		tapCount = 0;
+		TickStats(EmojiStats.Happiness);
 		yield return new WaitForSeconds(5f);
 		SetState(EmojiState.Default);
 	}
 	IEnumerator OnHappy()
 	{
 		SetState(EmojiState.Happy);
-		yield return new WaitForSeconds(3f);
+		yield return new WaitForSeconds(2f);
 		SetState(EmojiState.Default);
 	}
 	#endregion
 
 	#region activities
-	public void Sleep(){
+	public void Sleep(int staminaFactor){
+		sleeping = true;
 		SetState(EmojiState.Sleep);
+		GetComponent<RectTransform>().anchoredPosition = new Vector2(150f,529f);
+		EmojiStatsManager.Instance.EmojiGainStamina(staminaFactor);
 		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
 	}
-	public void Wake(){
+	void Wake(){
+		EmojiStatsManager.Instance.StopGainStamina();
+		sleeping = false;
 		SetState(EmojiState.Default);
+		GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
+	}
+	#endregion
+
+	#region reaction
+	public void Happy()
+	{
+		StopAllCoroutines();
+		TickStats(EmojiStats.Happiness,1);
+		StartCoroutine("OnHappy");
+	}
+	public void Annoyed()
+	{
+		StopAllCoroutines();
+		TickStats(EmojiStats.Happiness);
+		StartCoroutine("OnAnnoyed");
 	}
 	#endregion
 }

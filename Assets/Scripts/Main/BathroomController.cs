@@ -38,6 +38,70 @@ public class BathroomController : Rooms {
 		set{PlayerPrefs.SetInt(KeyBathroomItemToy,value);}
 	}
 
+	public Emoji emoji;
+	public Brush brushObject;
+	public Towel towelObject;
+	public GameObject waterSprout;
+	bool foamOnEmoji = false;
+	bool emojiWet = false;
+
+	void Awake()
+	{
+		brushObject.OnScrubbing += EmojiReactOnScrubing;
+		towelObject.OnDrying += EmojiReactOnDrying;
+	}
+
+	void OnDestroy()
+	{
+		brushObject.OnScrubbing -= EmojiReactOnScrubing;
+		towelObject.OnDrying -= EmojiReactOnDrying;
+	}
+
+	void EmojiReactOnScrubing(bool hasFoam)
+	{
+		if(!emojiWet){
+			if(!foamOnEmoji){
+				if(hasFoam == false){
+					emoji.Annoyed();
+				}else{
+					foamOnEmoji = true;
+					emoji.Happy();
+				}
+			}
+		}
+	}
+
+	void EmojiReactOnDrying()
+	{
+		if(emojiWet){
+			emojiWet = false;
+			emoji.TickStats(EmojiStats.Happiness,1);
+		}
+		emoji.Happy();
+	}
+
+	public void ButtonSoapOnClick()
+	{
+		brushObject.AddFoam();
+	}
+
+	public void ButtonShowerOnClick()
+	{
+		if(waterSprout.activeSelf) waterSprout.SetActive(false);
+		else{ 
+			if(foamOnEmoji){
+				emoji.TickStats(EmojiStats.Hygene,3);
+				emoji.Happy();
+				foamOnEmoji = false;
+			}else {
+				emoji.TickStats(EmojiStats.Hygene,1);
+				emoji.Annoyed();
+			}
+			waterSprout.SetActive(true);
+			emojiWet = true;
+		}
+	}
+
 	protected override int nextIndex(int item)
 	{
 		int tempIndex = 0;
