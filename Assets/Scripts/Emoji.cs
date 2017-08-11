@@ -21,6 +21,9 @@ public enum EmojiState{
 }
 
 public class Emoji : MonoBehaviour {
+	public delegate void EmojiSleep();
+	public event EmojiSleep OnEmojiSleepEvent;
+
 	public EmojiSO emojiSO;
 	public EmojiState state = EmojiState.Default;
 
@@ -78,6 +81,20 @@ public class Emoji : MonoBehaviour {
 		thisImage = GetComponent<Image>();
 	}
 
+	void OnEnable()
+	{
+		if(state == EmojiState.Angry){
+			StartCoroutine("OnAngry");
+		} else {
+			SetState(EmojiState.Default);
+		}
+	}
+
+	void OnDisable()
+	{
+		StopAllCoroutines();
+	}
+
 	#region mechanics_general
 	public void TickStats(Stats_Category category,int ticks = -1)
 	{
@@ -102,50 +119,74 @@ public class Emoji : MonoBehaviour {
 	{
 		if(state == EmojiState.Default){
 			SetState(EmojiState.Surprised);
-			StartCoroutine("OnSurprised");
-		}if(state == EmojiState.Surprised){
-			
-			if(tapCount++ == 3){
-				
+			StartCoroutine("OnSurprised", 3f);
+		}else if(state == EmojiState.Surprised){
+			if(tapCount++ == 5){
+				StopCoroutine("OnSurprised");
+				StartCoroutine("OnAnnoyed");
 			}
-			print(tapCount);
+		}else if(state == EmojiState.Annoyed) {
+			if(tapCount++ == 10){
+				StopCoroutine("OnAnnoyed");
+				StartCoroutine("OnAngry");
+			}
 		}
 	}
 
 	public void OnBeginDrag()
 	{
-		
+		if(state != EmojiState.Angry && state != EmojiState.Sleep){
+			SetState(EmojiState.Blissful);
+		}
 	}
 
 	public void OnEndDrag()
 	{
-		
+		if(state == EmojiState.Blissful){
+			SetState(EmojiState.Default);
+		}
 	}
 	#endregion
 
 	#region mechanics_coroutines
-	IEnumerator OnSurprised()
+	IEnumerator OnSurprised(float duration = 3f)
 	{
-		yield return null;
+		SetState(EmojiState.Surprised);
+		yield return new WaitForSeconds(duration);
+		tapCount = 0;
+		SetState(EmojiState.Default);
+
 	}
 	IEnumerator OnAnnoyed()
 	{
-		yield return null;
+		SetState(EmojiState.Annoyed);
+		yield return new WaitForSeconds(3f);
+		tapCount = 0;
+		SetState(EmojiState.Default);
 	}
 	IEnumerator OnAngry()
 	{
-		yield return null;
+		SetState(EmojiState.Angry);
+		tapCount = 0;
+		yield return new WaitForSeconds(5f);
+		SetState(EmojiState.Default);
 	}
 	IEnumerator OnHappy()
 	{
-		yield return null;
+		SetState(EmojiState.Happy);
+		yield return new WaitForSeconds(3f);
+		SetState(EmojiState.Default);
 	}
 	#endregion
 
 	#region activities
-	public void Sleep(){}
-	public void Wake(){}
+	public void Sleep(){
+		SetState(EmojiState.Sleep);
+		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
+	}
+	public void Wake(){
+		SetState(EmojiState.Default);
+		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
+	}
 	#endregion
-
-
 }

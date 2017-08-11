@@ -1,16 +1,13 @@
-﻿using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
-public class RoomSO : MonoBehaviour {
+[System.Serializable]
+public class RoomContent{
+	public string itemName;
+	public Sprite[] itemSprites;
+}
 
-	void Awake()
-	{
-		
-	}
-	
-	void Start () 
-	{
-		
-	}
+[CreateAssetMenu(fileName = "Room_",menuName = "Cards/Room",order = 1)]
+public class RoomSO : ScriptableObject {
+	public RoomName roomName;
+	public RoomContent[] content;
 }
