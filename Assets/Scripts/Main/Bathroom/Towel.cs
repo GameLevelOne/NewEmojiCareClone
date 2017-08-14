@@ -2,25 +2,31 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Towel : MonoBehaviour {
+public class Towel : RoomItems {
 	public delegate void Drying();
 	public event Drying OnDrying;
 
+	RectTransform thisTransform;
 	Vector2 startPos;
 
 	void Awake()
 	{
-		startPos = GetComponent<RectTransform>().anchoredPosition;
+		thisTransform = GetComponent<RectTransform>();
+		startPos = thisTransform.anchoredPosition;
 	}
 
 	public void OnDrag()
 	{
-		transform.position = Input.mousePosition;
+		if(!editMode){
+			transform.position = Input.mousePosition;
+		}
 	}
 
 	public void OnEndDrag()
 	{
-		GetComponent<RectTransform>().anchoredPosition = startPos;
+		if(!editMode){
+			GetComponent<RectTransform>().anchoredPosition = startPos;
+		}
 	}
 
 	void OnTriggerEnter2D(Collider2D e)

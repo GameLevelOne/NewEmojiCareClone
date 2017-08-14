@@ -33,48 +33,14 @@ public class BedroomController : Rooms {
 	}
 
 	public Emoji emoji;
-	public Image darkFilter;
 
-	public bool lampOn = true;
-	public bool windowOpen = true;
-
-	int staminaFactor = 1;
-
-	public void ButtonWindowOnClick()
+	void OnEnable()
 	{
-		if(windowOpen){
-			windowOpen = false;
-			UpdateDarkFilter(0.25f);
-			staminaFactor++;
-		}else{
-			windowOpen = true;
-			UpdateDarkFilter(-0.25f);
-			staminaFactor--;
-		}
+		emoji.OnEmojiSleepEvent += SetBedroomItems;
 	}
-
-	public void ButtonBedOnClick()
+	void OnDisable()
 	{
-		foreach(GameObject a in buttonItems) a.GetComponent<Button>().interactable = false;
-		if(emoji.state != EmojiState.Sleep && emoji.state != EmojiState.Angry) emoji.Sleep(staminaFactor);
-	}
-
-	public void ButtonLampOnClick()
-	{
-		if(lampOn){
-			lampOn = false;
-			UpdateDarkFilter(0.5f);
-			staminaFactor++;
-		}else{
-			lampOn = true;
-			UpdateDarkFilter(-0.5f);
-			staminaFactor--;
-		}
-	}
-
-	public void ButtonToyOnClick()
-	{
-		
+		emoji.OnEmojiSleepEvent -= SetBedroomItems;
 	}
 
 	protected override int nextIndex(int item)
@@ -100,13 +66,12 @@ public class BedroomController : Rooms {
 		return tempIndex;
 	}
 
-	void UpdateDarkFilter(float value)
+	public void SetBedroomItems()
 	{
-		darkFilter.color = new Color(0,0,0,darkFilter.color.a+value);
-	}
-
-	public void EnableButtonItems()
-	{
-		foreach(GameObject a in buttonItems) a.GetComponent<Button>().interactable = true;
+		if(emoji.state == EmojiState.Sleep){
+			foreach(RoomItems roomItem in roomItems) roomItem.emojiSleep = true;
+		}else{
+			foreach(RoomItems roomItem in roomItems) roomItem.emojiSleep = false;
+		}
 	}
 }

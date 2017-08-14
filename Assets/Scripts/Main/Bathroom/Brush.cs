@@ -2,18 +2,24 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Brush : MonoBehaviour {
+public class Brush : RoomItems {
 	public delegate void Scrubbing(bool hasFoam);
 	public event Scrubbing OnScrubbing;
 
 	public GameObject foam;
+
+	public bool emojiOnFoam = false;
+
+	RectTransform thisTransform;
 	Vector2 startPos;
 
 	bool scrubing = false;
 
+
 	void Awake()
 	{
-		startPos = GetComponent<RectTransform>().anchoredPosition;
+		thisTransform = GetComponent<RectTransform>();
+		startPos = thisTransform.anchoredPosition;
 	}
 
 	public void AddFoam()
@@ -27,7 +33,7 @@ public class Brush : MonoBehaviour {
 	}
 	public void OnEndDrag()
 	{
-		GetComponent<RectTransform>().anchoredPosition = startPos;
+		thisTransform.anchoredPosition = startPos;
 
 		if(scrubing) foam.SetActive(false);
 		scrubing = false;
@@ -37,6 +43,7 @@ public class Brush : MonoBehaviour {
 	{
 		if(e.tag == "Emoji"){
 			scrubing = true;
+			emojiOnFoam = true;
 			if(OnScrubbing != null) OnScrubbing(foam.activeSelf);
 		}
 	}

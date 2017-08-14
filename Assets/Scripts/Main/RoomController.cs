@@ -46,7 +46,7 @@ public class RoomController : MonoBehaviour {
 		buttonLeft.SetActive(true);
 		buttonRight.SetActive(true);
 		buttonEditRoom.SetActive(true);
-		rooms[(int)RoomName.Bedroom].GetComponent<BedroomController>().EnableButtonItems();
+//		rooms[(int)RoomName.Bedroom].GetComponent<BedroomController>().EnableButtonItems();
 	}
 
 	public void ButtonEditRoomOnClick()

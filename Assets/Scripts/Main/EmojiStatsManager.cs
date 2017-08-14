@@ -9,7 +9,10 @@ public class EmojiStatsManager : MonoBehaviour {
 	public Emoji emoji;
 	public PanelStatsController statsController;
 	public RoomController roomController;
-	public BedroomController bedroom;
+
+	[Header("Bedroom Items")]
+	public Window window;
+	public Lamp lamp;
 
 	void Awake()
 	{
@@ -41,7 +44,7 @@ public class EmojiStatsManager : MonoBehaviour {
 			yield return new WaitForSeconds(5f);
 			emoji.TickStats(EmojiStats.Hunger,hungerFactor(roomController.currentRoom));
 			emoji.TickStats(EmojiStats.Hygene,hygeneFactor(roomController.currentRoom));
-			emoji.TickStats(EmojiStats.Happiness,happinessFactor(roomController.currentRoom)+bedroomFactor(bedroom.lampOn,bedroom.windowOpen));
+			emoji.TickStats(EmojiStats.Happiness,happinessFactor(roomController.currentRoom)+bedroomFactor(lamp.lampOn,window.windowOpen));
 			if(emoji.state != EmojiState.Sleep) emoji.TickStats(EmojiStats.Stamina,staminaFactor(roomController.currentRoom));
 			if(emoji.hungerMod <= 0 || emoji.hygeneMod <= 0 || emoji.happinessMod <= 0 || emoji.staminaMod <= 0)
 				emoji.TickStats(EmojiStats.Health);

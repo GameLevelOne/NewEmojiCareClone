@@ -29,8 +29,7 @@ public class Emoji : MonoBehaviour {
 	public EmojiSO emojiSO;
 	public EmojiState state = EmojiState.Default;
 
-	Animator thisAnim;
-	Image thisImage;
+
 
 	int tapCount;
 	bool sleeping = false;
@@ -70,8 +69,16 @@ public class Emoji : MonoBehaviour {
 	}
 
 	public Sprite[] expressions{ get{return emojiSO.expressions;} }
-
 	#endregion
+
+	Rigidbody2D thisRigidbody;
+	RectTransform thisTransform;
+	Animator thisAnim;
+	Image thisImage;
+
+	Vector2 flickStartPos;
+	bool bSwiping = false;
+	bool isLaunched = false;
 
 	void Awake()
 	{
@@ -82,6 +89,8 @@ public class Emoji : MonoBehaviour {
 	{
 //		thisAnim = GetComponent<Animator>();
 		thisImage = GetComponent<Image>();
+		thisRigidbody = GetComponent<Rigidbody2D>();
+		thisTransform = GetComponent<RectTransform>();
 	}
 
 	void OnEnable()
@@ -146,6 +155,14 @@ public class Emoji : MonoBehaviour {
 	}
 	#endregion
 
+	#region mechanics_collissions
+	void OnCollisionEnter2D(Collision2D e){
+		if(e.gameObject.tag == "Toy"){
+			if(!isLaunched) StartCoroutine(OnColliding());
+		}
+	}
+	#endregion
+
 	#region mechanics_event_triggers
 	public void OnPointerClick()
 	{
@@ -169,21 +186,81 @@ public class Emoji : MonoBehaviour {
 
 	public void OnBeginDrag()
 	{
-		if(state != EmojiState.Angry && state != EmojiState.Sleep){
-			SetState(EmojiState.Blissful);
+		if(state != EmojiState.Sleep){
+			bSwiping = true;
+			flickStartPos = new Vector2(Input.mousePosition.x,Input.mousePosition.y);
+			StartCoroutine(Flicking());
+			if(state != EmojiState.Angry && state != EmojiState.Sleep){
+				SetState(EmojiState.Blissful);
+			}
 		}
+
 	}
 
 	public void OnEndDrag()
 	{
-		if(state == EmojiState.Blissful){
-			TickStats(EmojiStats.Happiness,1);
-			SetState(EmojiState.Default);
+		if(state != EmojiState.Sleep){
+			if(bSwiping){
+				Vector2 flickEndPos = new Vector2(Input.mousePosition.x,Input.mousePosition.y);
+				Vector2 tempResult = flickEndPos - flickStartPos;
+				StartCoroutine(EmojiLaunched(tempResult));
+			}
+			if(state == EmojiState.Blissful){
+				TickStats(EmojiStats.Happiness,1);
+				SetState(EmojiState.Default);
+			}
 		}
 	}
 	#endregion
 
 	#region mechanics_coroutines
+	IEnumerator Flicking()
+	{
+		yield return new WaitForSeconds(0.2f);
+		bSwiping = false;
+	}
+
+	IEnumerator EmojiLaunched(Vector2 result)
+	{
+		isLaunched = true;
+		thisRigidbody.AddForce(new Vector2(result.x*100,result.y*100));
+		yield return new WaitForSeconds(4f);
+
+		StartCoroutine(EmojiResetPosition());
+	}
+
+	IEnumerator EmojiResetPosition()
+	{
+		isLaunched = false;
+		thisRigidbody.velocity = Vector2.zero;
+		thisRigidbody.angularVelocity = 0f;
+		GetComponent<CircleCollider2D>().enabled = false;
+
+		float t = 0;
+		while(t < 1f){
+			Vector2 curPos = thisTransform.anchoredPosition;
+			Quaternion curRot = thisTransform.localRotation;
+			curRot.eulerAngles = new Vector3(0,0,curRot.eulerAngles.z % 360f);
+
+			thisTransform.anchoredPosition = Vector2.Lerp(curPos,Vector2.zero,t);
+			curRot.eulerAngles = Vector3.Lerp(curRot.eulerAngles,Vector3.zero,t);
+			thisTransform.localRotation = curRot;
+
+			t+= Time.fixedDeltaTime*5;
+			yield return new WaitForSeconds(Time.fixedDeltaTime);
+		}
+
+		thisTransform.anchoredPosition = Vector2.zero;
+		thisTransform.localRotation = Quaternion.identity;
+		GetComponent<CircleCollider2D>().enabled = true;
+	}
+
+	IEnumerator OnColliding()
+	{
+		yield return new WaitForSeconds(4f);
+		StartCoroutine(EmojiResetPosition());
+	}
+
 	IEnumerator OnSurprised(float duration = 2f)
 	{
 		SetState(EmojiState.Surprised);

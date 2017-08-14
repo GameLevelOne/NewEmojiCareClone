@@ -9,34 +9,23 @@ public enum RoomName{
 }
 
 public class Rooms : MonoBehaviour {
-	public delegate void EditModeSwitched();
-	public event EditModeSwitched OnEditModeSwitch;
-
 	public RoomSO roomSO;
 
-	public GameObject[] buttonItems;
+	public RoomItems[] roomItems;
 	public GameObject[] buttonChangeSprites;
-
-	protected bool editMode = false;
 
 	public void SwitchEditMode(bool editMode)
 	{
-		if(OnEditModeSwitch != null){
-			OnEditModeSwitch();
-		}
+		foreach(RoomItems roomItem in roomItems) roomItem.editMode = editMode;
 
-		if(!editMode){
-			foreach(GameObject button in buttonItems) if(button.GetComponent<Button>() != null) button.GetComponent<Button>().interactable = true;
-			foreach(GameObject button in buttonChangeSprites) button.SetActive(false);
-		}else{
-			foreach(GameObject button in buttonItems) if(button.GetComponent<Button>() != null) button.GetComponent<Button>().interactable = false;
-			foreach(GameObject button in buttonChangeSprites) button.SetActive(true);
-		}
+		if(editMode) foreach(GameObject button in buttonChangeSprites) button.SetActive(true);
+		else foreach(GameObject button in buttonChangeSprites) button.SetActive(false);
+
 	}
 
 	public void ButtonChangeSpriteOnClick(int item)
 	{
-		buttonItems[item].GetComponent<Image>().sprite = roomSO.content[item].itemSprites[nextIndex(item)];
+		roomItems[item].GetComponent<Image>().sprite = roomSO.content[item].itemSprites[nextIndex(item)];
 	}
 
 	protected virtual int nextIndex(int item)

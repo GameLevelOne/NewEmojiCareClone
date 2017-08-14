@@ -11,11 +11,11 @@ public enum BathroomItems{
 }
 
 public class BathroomController : Rooms {
-	const string KeyBathroomItemBrush = "Player/Room/Bathroom/Window";
-	const string KeyBathroommItemShower = "Player/Room/Bathroom/Bed";
-	const string KeyBathroomItemSoap = "Player/Room/Bathroom/Lamp";
+	const string KeyBathroomItemBrush = "Player/Room/Bathroom/Brush";
+	const string KeyBathroommItemShower = "Player/Room/Bathroom/Shower";
+	const string KeyBathroomItemSoap = "Player/Room/Bathroom/Soap";
 	const string KeyBathroomItemTowel = "Player/Room/Bathroom/Towel";
-	const string KeyBathroomItemToy = "Player/Room/Bedroom/Toy";
+	const string KeyBedroomItemToy = "Player/Room/Bedroom/Toy";
 
 	int brush{
 		get{return PlayerPrefs.GetInt(KeyBathroomItemBrush,0);}
@@ -34,8 +34,8 @@ public class BathroomController : Rooms {
 		set{PlayerPrefs.SetInt(KeyBathroomItemTowel,value);}
 	}
 	int toy{
-		get{return PlayerPrefs.GetInt(KeyBathroomItemToy,0);}
-		set{PlayerPrefs.SetInt(KeyBathroomItemToy,value);}
+		get{return PlayerPrefs.GetInt(KeyBedroomItemToy,0);}
+		set{PlayerPrefs.SetInt(KeyBedroomItemToy,value);}
 	}
 
 	public Emoji emoji;
