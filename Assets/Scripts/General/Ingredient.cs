@@ -2,38 +2,47 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Shower : RoomItems {
-	public GameObject waterSprout;
+public enum IngredientItems{
+	Cabbage,
+	Carrot,
+	Cheese,
+	Chicken,
+	Egg,
+	Fish,
+	Flour,
+	Meat,
+	Mushroom,
+	Tomato,
+}
 
+public class Ingredient : MonoBehaviour {
+	public IngredientItems type;
+	public bool editMode = false;
+
+	BoxCollider2D thisCollider;
 	RectTransform thisTransform;
 	Vector2 startPos;
 
+	Stove stove;
+
 	void Awake()
 	{
+		thisCollider = GetComponent<BoxCollider2D>();
 		thisTransform = GetComponent<RectTransform>();
 		startPos = thisTransform.anchoredPosition;
 	}
 
-	void OnEnable()
+	void OnTriggerEnter2D(Collider2D e)
 	{
-		waterSprout.GetComponent<WaterSprout>().OnShower += OnShower;
+		if(e.tag == "Stove"){
+			stove = e.GetComponent<Stove>();
+		}
 	}
 
-	void OnDisable()
+	void OnTriggerExit2D(Collider2D e)
 	{
-		waterSprout.GetComponent<WaterSprout>().OnShower -= OnShower;
-	}
-
-	void OnShower()
-	{
-		emoji.Showered();
-	}
-
-	public void OnPointerClick()
-	{
-		if(!editMode){
-			if(waterSprout.activeSelf) waterSprout.SetActive(false);
-			else waterSprout.SetActive(true);
+		if(e.tag == "Stove"){
+			stove = null;
 		}
 	}
 
@@ -47,7 +56,13 @@ public class Shower : RoomItems {
 	public void OnEndDrag()
 	{
 		if(!editMode){
-			StartCoroutine(BackToStartPosition());
+			if(stove != null){
+				stove.AddIngredient(this);
+				thisTransform.anchoredPosition = new Vector2(thisTransform.anchoredPosition.x,2000);
+			}else{
+				StartCoroutine(BackToStartPosition());
+			}
+
 		}
 	}
 

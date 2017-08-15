@@ -80,6 +80,10 @@ public class Emoji : MonoBehaviour {
 	bool bSwiping = false;
 	bool isLaunched = false;
 
+	//bathroom
+	[HideInInspector]
+	public bool foamed = false, wet = false;
+
 	void Awake()
 	{
 		Init();
@@ -189,7 +193,7 @@ public class Emoji : MonoBehaviour {
 		if(state != EmojiState.Sleep){
 			bSwiping = true;
 			flickStartPos = new Vector2(Input.mousePosition.x,Input.mousePosition.y);
-			StartCoroutine(Flicking());
+			StartCoroutine("Flicking");
 			if(state != EmojiState.Angry && state != EmojiState.Sleep){
 				SetState(EmojiState.Blissful);
 			}
@@ -203,7 +207,7 @@ public class Emoji : MonoBehaviour {
 			if(bSwiping){
 				Vector2 flickEndPos = new Vector2(Input.mousePosition.x,Input.mousePosition.y);
 				Vector2 tempResult = flickEndPos - flickStartPos;
-				StartCoroutine(EmojiLaunched(tempResult));
+				StartCoroutine("EmojiLaunched",tempResult);
 			}
 			if(state == EmojiState.Blissful){
 				TickStats(EmojiStats.Happiness,1);
@@ -226,7 +230,7 @@ public class Emoji : MonoBehaviour {
 		thisRigidbody.AddForce(new Vector2(result.x*100,result.y*100));
 		yield return new WaitForSeconds(4f);
 
-		StartCoroutine(EmojiResetPosition());
+		StartCoroutine("EmojiResetPosition");
 	}
 
 	IEnumerator EmojiResetPosition()
@@ -300,12 +304,23 @@ public class Emoji : MonoBehaviour {
 		EmojiStatsManager.Instance.EmojiGainStamina(staminaFactor);
 		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
 	}
+
 	void Wake(){
 		EmojiStatsManager.Instance.StopGainStamina();
 		sleeping = false;
 		SetState(EmojiState.Default);
 		GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 		if(OnEmojiSleepEvent != null) OnEmojiSleepEvent();
+	}
+
+	public void Eat(int hungerFactor = 0, int hygeneFactor = 0, int happinessFactor = 0, int staminaFactor = 0, int healthFactor = 0)
+	{
+		TickStats(EmojiStats.Hunger,hungerFactor);
+		TickStats(EmojiStats.Hygene,hygeneFactor);
+		TickStats(EmojiStats.Happiness,happinessFactor);
+		TickStats(EmojiStats.Stamina,staminaFactor);
+		TickStats(EmojiStats.Health,healthFactor);
+		Happy();
 	}
 	#endregion
 
@@ -321,6 +336,43 @@ public class Emoji : MonoBehaviour {
 		StopAllCoroutines();
 		TickStats(EmojiStats.Happiness);
 		StartCoroutine("OnAnnoyed");
+	}
+
+	//bathroom
+	public void Brushed(bool hasFoam)
+	{
+		if(!wet){
+			if(!foamed){
+				if(!hasFoam){
+					Annoyed();
+				}else{
+					foamed = true;
+					Happy();
+				}
+			}
+		}
+	}
+
+	public void Showered()
+	{
+		if(foamed){
+			TickStats(EmojiStats.Hygene,3);
+			Happy();
+			foamed = false;
+		}else{
+			TickStats(EmojiStats.Hygene,1);
+			Annoyed();
+		}
+		wet = true;
+	}
+
+	public void Wiped()
+	{
+		if(wet){
+			wet = false;
+			TickStats(EmojiStats.Happiness,1);
+			Happy();
+		}
 	}
 	#endregion
 }

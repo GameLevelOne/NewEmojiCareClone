@@ -20,7 +20,6 @@ public class Rooms : MonoBehaviour {
 
 		if(editMode) foreach(GameObject button in buttonChangeSprites) button.SetActive(true);
 		else foreach(GameObject button in buttonChangeSprites) button.SetActive(false);
-
 	}
 
 	public void ButtonChangeSpriteOnClick(int item)

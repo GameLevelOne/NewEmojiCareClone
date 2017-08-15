@@ -3,18 +3,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Brush : RoomItems {
-	public delegate void Scrubbing(bool hasFoam);
-	public event Scrubbing OnScrubbing;
-
 	public GameObject foam;
-
-	public bool emojiOnFoam = false;
 
 	RectTransform thisTransform;
 	Vector2 startPos;
 
 	bool scrubing = false;
-
 
 	void Awake()
 	{
@@ -33,18 +27,28 @@ public class Brush : RoomItems {
 	}
 	public void OnEndDrag()
 	{
-		thisTransform.anchoredPosition = startPos;
-
 		if(scrubing) foam.SetActive(false);
 		scrubing = false;
+
+		StartCoroutine(BackToStartPosition());
 	}
 
 	void OnTriggerEnter2D(Collider2D e)
 	{
-		if(e.tag == "Emoji"){
+		if(e.tag == "EmojiTrigger"){
 			scrubing = true;
-			emojiOnFoam = true;
-			if(OnScrubbing != null) OnScrubbing(foam.activeSelf);
+			emoji.Brushed(foam.activeSelf);
 		}
+	}
+
+	IEnumerator BackToStartPosition()
+	{
+		float t = 0f;
+		while(t < 1f){
+			thisTransform.anchoredPosition = Vector2.Lerp(thisTransform.anchoredPosition,startPos,t);
+			t += Time.fixedDeltaTime * 5f;
+			yield return new WaitForSeconds(Time.fixedDeltaTime);
+		}
+		thisTransform.anchoredPosition = startPos;
 	}
 }

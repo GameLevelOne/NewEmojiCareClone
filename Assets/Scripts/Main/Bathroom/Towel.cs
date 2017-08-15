@@ -3,9 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Towel : RoomItems {
-	public delegate void Drying();
-	public event Drying OnDrying;
-
 	RectTransform thisTransform;
 	Vector2 startPos;
 
@@ -25,14 +22,25 @@ public class Towel : RoomItems {
 	public void OnEndDrag()
 	{
 		if(!editMode){
-			GetComponent<RectTransform>().anchoredPosition = startPos;
+			StartCoroutine(BackToStartPosition());
 		}
 	}
 
 	void OnTriggerEnter2D(Collider2D e)
 	{
-		if(e.tag == "Emoji"){
-			if(OnDrying != null) OnDrying();
+		if(e.tag == "EmojiTrigger"){
+			emoji.Wiped();
 		}
+	}
+
+	IEnumerator BackToStartPosition()
+	{
+		float t = 0f;
+		while(t < 1f){
+			thisTransform.anchoredPosition = Vector2.Lerp(thisTransform.anchoredPosition,startPos,t);
+			t += Time.fixedDeltaTime * 5f;
+			yield return new WaitForSeconds(Time.fixedDeltaTime);
+		}
+		thisTransform.anchoredPosition = startPos;
 	}
 }

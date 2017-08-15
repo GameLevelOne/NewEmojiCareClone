@@ -8,7 +8,7 @@ public class WaterSprout : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D e)
 	{
-		if(e.tag == "Emoji"){
+		if(e.tag == "EmojiTrigger"){
 			if(OnShower != null) OnShower();
 		}
 	}

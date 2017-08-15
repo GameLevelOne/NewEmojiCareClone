@@ -18,6 +18,21 @@ public class Toy : RoomItems {
 		startPos = GetComponent<RectTransform>().anchoredPosition;
 	}
 
+	void OnEnable()
+	{
+		emoji.OnEmojiSleepEvent += OnEmojiSleepOrAwake;
+	}
+
+	void OnDisable()
+	{
+		emoji.OnEmojiSleepEvent -= OnEmojiSleepOrAwake;
+	}
+
+	void OnEmojiSleepOrAwake(){
+		if(emoji.state == EmojiState.Sleep) emojiSleep = true;
+		else emojiSleep = false;
+	}
+
 	void OnCollisionEnter2D(Collision2D e)
 	{
 		if(e.gameObject.tag == "Emoji"){
@@ -95,5 +110,4 @@ public class Toy : RoomItems {
 		yield return new WaitForSeconds(4f);
 		StartCoroutine(ToyReset());
 	}
-
 }

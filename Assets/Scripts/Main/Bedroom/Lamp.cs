@@ -7,6 +7,21 @@ public class Lamp : RoomItems {
 	public Bed bed;
 	public bool lampOn = true;
 
+	void OnEnable()
+	{
+		emoji.OnEmojiSleepEvent += OnEmojiSleepOrAwake;
+	}
+
+	void OnDisable()
+	{
+		emoji.OnEmojiSleepEvent -= OnEmojiSleepOrAwake;
+	}
+
+	void OnEmojiSleepOrAwake(){
+		if(emoji.state == EmojiState.Sleep) emojiSleep = true;
+		else emojiSleep = false;
+	}
+
 	public void LampOnClick()
 	{
 		if(!editMode && !emojiSleep){
